@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>جرد الحسابات</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(to bottom, #f0f4f8, #e2ecf2);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .box {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #2980b9;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      margin-top: 20px;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .input, select {
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 150px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th {
+      background-color: #2980b9;
+      color: white;
+      padding: 10px;
+    }
+
+    td {
+      border-bottom: 1px solid #eee;
+      padding: 10px;
+      background-color: #fafafa;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f0f8ff;
+    }
+
+    .total-box {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #ecf0f1;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .total-box p {
+      font-size: 1.1em;
+      margin: 8px 0;
+    }
+
+    .total-box strong {
+      font-size: 1.3em;
+      color: #27ae60;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .input, select {
+        width: 100%;
+      }
+
+      .form-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    /* نافذة منبثقة */
+    #confirmBox {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #confirmBox .content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      font-size: 16px;
+    }
+
+    #confirmBox .content h3 {
+      color: #e74c3c;
+      margin-bottom: 20px;
+    }
+
+    #confirmBox .content button {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>جرد الحسابات المالية</h1>
+
+  <div class="box">
+    <h2>الرصيد الحالي: <span id="balance">0</span> ج</h2>
+    <div class="form-row">
+      <input type="number" id="addAmount" class="input" placeholder="مبلغ الإضافة">
+      <button onclick="addFunds()" class="btn">إضافة مبلغ</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>عملية شراء / صرف</h2>
+    <div class="form-row">
+      <select id="category">
+        <option value="منزلي">منزلي</option>
+        <option value="تجاري">تجاري</option>
+        <option value="صناعي">صناعي</option>
+      </select>
+      <input type="number" id="expenseAmount" class="input" placeholder="المبلغ">
+      <input type="text" id="note" class="input" placeholder="ملاحظة (اختياري)">
+      <button onclick="addExpense()" class="btn">إضافة عملية</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>العمليات المنزلية</h2>
+    <table id="homeTable">
+      <tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr>
+    </table>
+  </div>
+
+  <div class="box">
+    <h2>العمليات التجارية</h2>
+    <table id="businessTable">
+      <tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr>
+    </table>
+  </div>
+
+  <div class="box">
+    <h2>العمليات الصناعية</h2>
+    <table id="industryTable">
+      <tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr>
+    </table>
+  </div>
+
+  <div class="total-box">
+    <h2>إحصائيات الحساب</h2>
+    <p>إجمالي الإضافات: <span id="totalAdded">0</span> ج</p>
+    <p>إجمالي الصرف المنزلي: <span id="homeTotal">0</span> ج</p>
+    <p>إجمالي الصرف التجاري: <span id="businessTotal">0</span> ج</p>
+    <p>إجمالي الصرف الصناعي: <span id="industryTotal">0</span> ج</p>
+    <p><strong>الرصيد المتبقي: <span id="balanceFinal">0</span> ج</strong></p>
+    <button onclick="showConfirmBox()" class="btn btn-danger">تصفير جميع البيانات</button>
+  </div>
+
+  <!-- نافذة التأكيد -->
+  <div id="confirmBox">
+    <div class="content">
+      <h3>تحذير!</h3>
+      <p>هل أنت متأكد أنك تريد تصفير كل البيانات؟</p>
+      <button onclick="clearAll()" class="btn btn-danger">نعم، امسح الكل</button>
+      <button onclick="hideConfirmBox()" class="btn">إلغاء</button>
+    </div>
+  </div>
+
+  <script>
+    let balance = 0;
+    let totalAdded = 0;
+    let stats = { منزلي: 0, تجاري: 0, صناعي: 0 };
+
+    function updateUI() {
+      document.getElementById('balance').textContent = balance.toFixed(2);
+      document.getElementById('totalAdded').textContent = totalAdded.toFixed(2);
+      document.getElementById('homeTotal').textContent = stats["منزلي"].toFixed(2);
+      document.getElementById('businessTotal').textContent = stats["تجاري"].toFixed(2);
+      document.getElementById('industryTotal').textContent = stats["صناعي"].toFixed(2);
+      document.getElementById('balanceFinal').textContent = balance.toFixed(2);
+    }
+
+    function saveData() {
+      const data = {
+        balance, totalAdded, stats,
+        homeTable: document.getElementById("homeTable").innerHTML,
+        businessTable: document.getElementById("businessTable").innerHTML,
+        industryTable: document.getElementById("industryTable").innerHTML
+      };
+      localStorage.setItem("accountData", JSON.stringify(data));
+    }
+
+    function loadData() {
+      const saved = JSON.parse(localStorage.getItem("accountData"));
+      if (saved) {
+        balance = saved.balance;
+        totalAdded = saved.totalAdded;
+        stats = saved.stats;
+        document.getElementById("homeTable").innerHTML = saved.homeTable;
+        document.getElementById("businessTable").innerHTML = saved.businessTable;
+        document.getElementById("industryTable").innerHTML = saved.industryTable;
+      }
+    }
+
+    function addFunds() {
+      const val = parseFloat(document.getElementById('addAmount').value);
+      if (!isNaN(val) && val > 0) {
+        balance += val;
+        totalAdded += val;
+        document.getElementById('addAmount').value = "";
+        updateUI();
+        saveData();
+      }
+    }
+
+    function addExpense() {
+      const category = document.getElementById('category').value;
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      const note = document.getElementById('note').value || '-';
+      const date = new Date().toLocaleString();
+
+      if (!isNaN(amount) && amount > 0 && balance >= amount) {
+        balance -= amount;
+        stats[category] += amount;
+        const row = `<tr><td>${date}</td><td>${amount.toFixed(2)}</td><td>${note}</td></tr>`;
+        document.getElementById(category === "منزلي" ? "homeTable" :
+                                category === "تجاري" ? "businessTable" :
+                                "industryTable").innerHTML += row;
+        document.getElementById('expenseAmount').value = "";
+        document.getElementById('note').value = "";
+        updateUI();
+        saveData();
+      } else {
+        alert("الرصيد غير كافٍ أو المبلغ غير صحيح.");
+      }
+    }
+
+    function showConfirmBox() {
+      document.getElementById("confirmBox").style.display = "flex";
+    }
+
+    function hideConfirmBox() {
+      document.getElementById("confirmBox").style.display = "none";
+    }
+
+    function clearAll() {
+      localStorage.removeItem("accountData");
+      location.reload();
+    }
+
+    loadData();
+    updateUI();
+  </script>
+
+</body>
+</html>

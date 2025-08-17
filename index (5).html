@@ -1,311 +1,253 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>جرد الحسابات</title>
+  <title>متجر كوينز</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: linear-gradient(to bottom, #f0f4f8, #e2ecf2);
-      margin: 0;
-      padding: 20px;
-      color: #333;
+    body {font-family: Arial, sans-serif; margin:0; padding:0; background:#f9f9f9; direction:rtl;}
+    header {background:#007bff; color:#fff; padding:15px; text-align:center; font-size:20px;}
+    .products {display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:15px; padding:20px;}
+    .card {background:#fff; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:15px; text-align:center;}
+    .card img {max-width:100%; border-radius:10px;}
+    .price {margin:10px 0; font-weight:bold; color:#333;}
+    .btn {background:#007bff; color:#fff; border:none; padding:10px 15px; border-radius:8px; cursor:pointer;}
+    .btn:hover {background:#0056b3;}
+    /* نافذة الطلب */
+    .popup {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;}
+    .popup-content {background:#fff; padding:20px; border-radius:15px; width:90%; max-width:400px; text-align:center; position:relative;}
+    .close {position:absolute; top:10px; left:10px; cursor:pointer; font-size:20px;}
+    .qr-img {width:200px; margin:10px auto;}
+    input {width:90%; padding:8px; margin:6px 0; border:1px solid #ccc; border-radius:8px;}
+    .row {display:flex; justify-content:space-between; gap:5px;}
+    .row input {width:48%;}
+    /* سلة عائمة (يسار أعلى) */
+    .cart-btn {
+      position:fixed;
+      top:70px; /* أسفل الهيدر */
+      left:20px;
+      background:#222;
+      color:#fff;
+      padding:10px 15px;
+      border-radius:30px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.3);
+      cursor:pointer;
+      z-index:1100;
     }
-
-    h1, h2 {
-      text-align: center;
-      color: #2c3e50;
+    .checkmark {display:none; font-size:48px; color:green; animation:pop 0.5s ease;}
+    @keyframes pop {0%{transform:scale(0);}100%{transform:scale(1);}}
+    /* تحسين نافذة السلة */
+    #ordersListPopup {
+      display:none; 
+      position:fixed; 
+      top:0; left:0; 
+      width:100%; height:100%; 
+      background:rgba(0,0,0,0.6); 
+      align-items:center; 
+      justify-content:center; 
+      z-index:2000;
     }
-
-    .box {
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 800px;
+    #ordersListPopup .popup-content {
+      background:#fff;
+      padding:20px;
+      border-radius:15px;
+      width:90%;
+      max-width:600px;
+      text-align:right;
+      max-height:80vh;
+      overflow-y:auto;
+      position:relative;
     }
-
-    .btn {
-      padding: 10px 20px;
-      background: #3498db;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
+    #ordersListPopup .close {
+      position:absolute;
+      top:10px;
+      left:10px;
+      cursor:pointer;
+      font-size:22px;
+      color:#333;
     }
-
-    .btn:hover {
-      background: #2980b9;
+    .order-card {
+      background:#fdfdfd;
+      border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      padding:12px;
+      margin-bottom:10px;
     }
-
-    .btn-danger {
-      background: #e74c3c;
-      margin-top: 20px;
-    }
-
-    .btn-danger:hover {
-      background: #c0392b;
-    }
-
-    .input, select {
-      padding: 10px;
-      margin: 5px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      width: 150px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-
-    th {
-      background-color: #2980b9;
-      color: white;
-      padding: 10px;
-    }
-
-    td {
-      border-bottom: 1px solid #eee;
-      padding: 10px;
-      background-color: #fafafa;
-    }
-
-    tr:nth-child(even) td {
-      background-color: #f0f8ff;
-    }
-
-    .total-box {
-      max-width: 800px;
-      margin: 30px auto;
-      background: #ecf0f1;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .total-box p {
-      font-size: 1.1em;
-      margin: 8px 0;
-    }
-
-    .total-box strong {
-      font-size: 1.3em;
-      color: #27ae60;
-    }
-
-    .form-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .input, select {
-        width: 100%;
-      }
-
-      .form-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .btn {
-        width: 100%;
-      }
-    }
-
-    /* نافذة منبثقة */
-    #confirmBox {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    #confirmBox .content {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      text-align: center;
-      width: 300px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      font-size: 16px;
-    }
-
-    #confirmBox .content h3 {
-      color: #e74c3c;
-      margin-bottom: 20px;
-    }
-
-    #confirmBox .content button {
-      margin: 10px;
-    }
+    .order-card strong {color:#007bff;}
+    .order-card p {margin:4px 0; font-size:14px;}
   </style>
 </head>
 <body>
+<header>🛒 متجر الكوينز</header>
 
-  <h1>جرد الحسابات المالية</h1>
+<div class="products" id="products"></div>
 
-  <div class="box">
-    <h2>الرصيد الحالي: <span id="balance">0</span> ج</h2>
-    <div class="form-row">
-      <input type="number" id="addAmount" class="input" placeholder="مبلغ الإضافة">
-      <button onclick="addFunds()" class="btn">إضافة مبلغ</button>
-    </div>
+<!-- نافذة الطلب -->
+<div class="popup" id="orderPopup">
+  <div class="popup-content">
+    <span class="close" onclick="closeOrderPopup()">&times;</span>
+    <h3 id="popupTitle"></h3>
+    <div id="stepContent"></div>
+    <div class="checkmark" id="checkmark">✔️</div>
   </div>
+</div>
 
-  <div class="box">
-    <h2>عملية شراء / صرف</h2>
-    <div class="form-row">
-      <select id="category">
-        <option value="منزلي">منزلي</option>
-        <option value="تجاري">تجاري</option>
-        <option value="صناعي">صناعي</option>
-      </select>
-      <input type="number" id="expenseAmount" class="input" placeholder="المبلغ">
-      <input type="text" id="note" class="input" placeholder="ملاحظة (اختياري)">
-      <button onclick="addExpense()" class="btn">إضافة عملية</button>
-    </div>
+<!-- نافذة عرض الطلبات -->
+<div class="popup" id="ordersListPopup">
+  <div class="popup-content">
+    <span class="close" onclick="closeOrdersPopup()">&times;</span>
+    <h3>🛍️ قائمة الطلبات</h3>
+    <div id="ordersList"></div>
   </div>
+</div>
 
-  <div class="box">
-    <h2>العمليات المنزلية</h2>
-    <table id="homeTable">
-      <tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr>
-    </table>
-  </div>
+<!-- زر السلة -->
+<div class="cart-btn" onclick="showOrdersPopup()">🛍️ <span id="cartCount">0</span></div>
 
-  <div class="box">
-    <h2>العمليات التجارية</h2>
-    <table id="businessTable">
-      <tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr>
-    </table>
-  </div>
+<script>
+const productsData = [
+  {id:1, title:"سوشيال ميديا", price:1.2, img:"https://via.placeholder.com/200"},
+  {id:2, title:"شدات ببجي", price:2.5, img:"https://via.placeholder.com/200"},
+  {id:3, title:"جواهر فري فاير", price:3.1, img:"https://via.placeholder.com/200"},
+  {id:4, title:"بطاقات آيتونز", price:5.0, img:"https://via.placeholder.com/200"},
+  {id:5, title:"كرديت كول أوف ديوتي", price:4.7, img:"https://via.placeholder.com/200"},
+  {id:6, title:"بطاقات بلايستيشن", price:7.3, img:"https://via.placeholder.com/200"},
+  {id:7, title:"بطاقات جوجل بلاي", price:6.2, img:"https://via.placeholder.com/200"},
+  {id:8, title:"بطاقات نتفلكس", price:8.9, img:"https://via.placeholder.com/200"},
+  {id:9, title:"بطاقات سبوتيفاي", price:9.5, img:"https://via.placeholder.com/200"},
+  {id:10, title:"باكجات كوينز فيفا", price:11.0, img:"https://via.placeholder.com/200"},
+  {id:11, title:"روبكس روبلوكس", price:3.8, img:"https://via.placeholder.com/200"},
+  {id:12, title:"باكجات بيس", price:6.7, img:"https://via.placeholder.com/200"}
+];
+let currentProduct=null, currentStep=1, customerName="", customerID="", customerWhatsApp="", coinAmount=0, coinPrice=0;
+let sentOrders = JSON.parse(localStorage.getItem('sentOrders')||'[]');
+const ownerWhatsApp = "+20123456789";
+const ownerEmail = "owner@example.com";
 
-  <div class="box">
-    <h2>العمليات الصناعية</h2>
-    <table id="industryTable">
-      <tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr>
-    </table>
-  </div>
+function renderProducts(){
+  const productsEl=document.getElementById('products');
+  productsEl.innerHTML="";
+  productsData.forEach(p=>{
+    const card=document.createElement('div');
+    card.className="card";
+    card.innerHTML=`<img src="${p.img}" alt="${p.title}" />
+      <h4>${p.title}</h4>
+      <div class="price">${p.price.toFixed(2)} USD</div>
+      <button class="btn" onclick="startOrder(${p.id})">أضف للسلة</button>`;
+    productsEl.appendChild(card);
+  });
+}
 
-  <div class="total-box">
-    <h2>إحصائيات الحساب</h2>
-    <p>إجمالي الإضافات: <span id="totalAdded">0</span> ج</p>
-    <p>إجمالي الصرف المنزلي: <span id="homeTotal">0</span> ج</p>
-    <p>إجمالي الصرف التجاري: <span id="businessTotal">0</span> ج</p>
-    <p>إجمالي الصرف الصناعي: <span id="industryTotal">0</span> ج</p>
-    <p><strong>الرصيد المتبقي: <span id="balanceFinal">0</span> ج</strong></p>
-    <button onclick="showConfirmBox()" class="btn btn-danger">تصفير جميع البيانات</button>
-  </div>
+function startOrder(productId){
+  currentProduct=productsData.find(p=>p.id===productId);
+  currentStep=1; customerName=""; customerID=""; customerWhatsApp="";
+  coinAmount=0; coinPrice=0;
+  document.getElementById('checkmark').style.display="none";
+  document.getElementById('stepContent').style.display="block";
+  showStep();
+  document.getElementById('orderPopup').style.display="flex";
+}
+function closeOrderPopup(){document.getElementById('orderPopup').style.display="none";}
 
-  <!-- نافذة التأكيد -->
-  <div id="confirmBox">
-    <div class="content">
-      <h3>تحذير!</h3>
-      <p>هل أنت متأكد أنك تريد تصفير كل البيانات؟</p>
-      <button onclick="clearAll()" class="btn btn-danger">نعم، امسح الكل</button>
-      <button onclick="hideConfirmBox()" class="btn">إلغاء</button>
-    </div>
-  </div>
+function showStep(){
+  const title=document.getElementById('popupTitle');
+  const content=document.getElementById('stepContent');
+  if(currentStep===1){
+    title.textContent=`طلب: ${currentProduct.title}`;
+    content.innerHTML=`<div class="row">
+        <input id="coinAmount" type="number" placeholder="عدد الكوينز" oninput="calcPrice()" />
+        <input id="coinPrice" placeholder="السعر (USD)" readonly />
+      </div>
+      <button class="btn" onclick="nextStep()">التالي</button>`;
+  } else if(currentStep===2){
+    title.textContent=`معلومات الحساب`;
+    content.innerHTML=`<input id="customerName" placeholder="اسمك / حسابك" />
+      <input id="customerID" placeholder="ID الحساب" />
+      <input id="customerWhatsApp" placeholder="رقم واتساب للتواصل" />
+      <button class="btn" onclick="nextStep()">التالي</button>`;
+  } else if(currentStep===3){
+    title.textContent=`الدفع`;
+    content.innerHTML=`<p>امسح الشيفرة للدفع</p>
+      <img class="qr-img" src="https://c.top4top.io/p_3512ytqp71.jpg" alt="شيفرة الدفع" />
+      <button class="btn" onclick="paymentDone()">تم الدفع</button>`;
+  }
+}
+function calcPrice(){
+  const amount=parseInt(document.getElementById('coinAmount').value)||0;
+  coinAmount=amount;
+  const base=currentProduct.price;
+  coinPrice=((amount/1000)* (base+0.3)).toFixed(2);
+  document.getElementById('coinPrice').value=coinPrice+" USD";
+}
+function nextStep(){
+  if(currentStep===1){
+    if(!coinAmount || coinAmount<=0){alert("أدخل عدد الكوينز"); return;}
+    if(!coinPrice || coinPrice<=0){alert("أدخل عدد صحيح لحساب السعر"); return;}
+    currentStep++;
+  } else if(currentStep===2){
+    const name=document.getElementById('customerName').value.trim();
+    const id=document.getElementById('customerID').value.trim();
+    const wa=document.getElementById('customerWhatsApp').value.trim();
+    if(!name||!id||!wa){alert("املأ كل الحقول"); return;}
+    customerName=name; customerID=id; customerWhatsApp=wa;
+    currentStep++;
+  }
+  showStep();
+}
+function paymentDone(){
+  document.getElementById('checkmark').style.display="flex";
+  document.getElementById('stepContent').style.display="none";
+  setTimeout(()=>{
+    sendOrder();
+    document.getElementById('stepContent').style.display="block";
+    document.getElementById('checkmark').style.display="none";
+  },2000);
+}
+function sendOrder(){
+  const formattedText=`🛍️ *طلب جديد* 🛍️
+━━━━━━━━━━━━━━
+📦 *المنتج:* ${currentProduct.title}
+💰 *عدد الكوينز:* ${coinAmount}
+💵 *السعر:* ${coinPrice} USD
+👤 *الاسم/الحساب:* ${customerName}
+🆔 *ID:* ${customerID}
+📱 *واتساب العميل:* ${customerWhatsApp}
+━━━━━━━━━━━━━━
+شكراً لطلبك ❤️`;
 
-  <script>
-    let balance = 0;
-    let totalAdded = 0;
-    let stats = { منزلي: 0, تجاري: 0, صناعي: 0 };
+  if(/Android|iPhone|iPad/i.test(navigator.userAgent)){
+    window.location.href=`https://wa.me/${ownerWhatsApp.replace('+','')}?text=${encodeURIComponent(formattedText)}`;
+  } else {
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ownerEmail)}&su=${encodeURIComponent('طلب جديد')}&body=${encodeURIComponent(formattedText)}`,'_blank');
+  }
+  const order={product:currentProduct.title, coins:coinAmount, price:coinPrice, name:customerName, id:customerID, whatsapp:customerWhatsApp};
+  sentOrders.push(order);
+  localStorage.setItem('sentOrders',JSON.stringify(sentOrders));
+  updateCartCount();
+  closeOrderPopup();
+}
 
-    function updateUI() {
-      document.getElementById('balance').textContent = balance.toFixed(2);
-      document.getElementById('totalAdded').textContent = totalAdded.toFixed(2);
-      document.getElementById('homeTotal').textContent = stats["منزلي"].toFixed(2);
-      document.getElementById('businessTotal').textContent = stats["تجاري"].toFixed(2);
-      document.getElementById('industryTotal').textContent = stats["صناعي"].toFixed(2);
-      document.getElementById('balanceFinal').textContent = balance.toFixed(2);
-    }
+function updateCartCount(){document.getElementById('cartCount').textContent=sentOrders.length;}
+function showOrdersPopup(){
+  const ordersPopup=document.getElementById('ordersListPopup');
+  const ordersList=document.getElementById('ordersList');
+  if(sentOrders.length===0){ordersList.innerHTML='<p>لا توجد طلبات حتى الآن.</p>';}
+  else {
+    ordersList.innerHTML=sentOrders.map((o,i)=>`
+      <div class="order-card">
+        <strong>طلب #${i+1}</strong>
+        <p>📦 المنتج: ${o.product}</p>
+        <p>💰 الكوينز: ${o.coins}</p>
+        <p>💵 السعر: ${o.price} USD</p>
+        <p>👤 الاسم: ${o.name}</p>
+        <p>🆔 ID: ${o.id}</p>
+        <p>📱 واتساب: ${o.whatsapp}</p>
+      </div>`).join('');
+  }
+  ordersPopup.style.display='flex';
+}
+function closeOrdersPopup(){document.getElementById('ordersListPopup').style.display='none';}
 
-    function saveData() {
-      const data = {
-        balance, totalAdded, stats,
-        homeTable: document.getElementById("homeTable").innerHTML,
-        businessTable: document.getElementById("businessTable").innerHTML,
-        industryTable: document.getElementById("industryTable").innerHTML
-      };
-      localStorage.setItem("accountData", JSON.stringify(data));
-    }
-
-    function loadData() {
-      const saved = JSON.parse(localStorage.getItem("accountData"));
-      if (saved) {
-        balance = saved.balance;
-        totalAdded = saved.totalAdded;
-        stats = saved.stats;
-        document.getElementById("homeTable").innerHTML = saved.homeTable;
-        document.getElementById("businessTable").innerHTML = saved.businessTable;
-        document.getElementById("industryTable").innerHTML = saved.industryTable;
-      }
-    }
-
-    function addFunds() {
-      const val = parseFloat(document.getElementById('addAmount').value);
-      if (!isNaN(val) && val > 0) {
-        balance += val;
-        totalAdded += val;
-        document.getElementById('addAmount').value = "";
-        updateUI();
-        saveData();
-      }
-    }
-
-    function addExpense() {
-      const category = document.getElementById('category').value;
-      const amount = parseFloat(document.getElementById('expenseAmount').value);
-      const note = document.getElementById('note').value || '-';
-      const date = new Date().toLocaleString();
-
-      if (!isNaN(amount) && amount > 0 && balance >= amount) {
-        balance -= amount;
-        stats[category] += amount;
-        const row = `<tr><td>${date}</td><td>${amount.toFixed(2)}</td><td>${note}</td></tr>`;
-        document.getElementById(category === "منزلي" ? "homeTable" :
-                                category === "تجاري" ? "businessTable" :
-                                "industryTable").innerHTML += row;
-        document.getElementById('expenseAmount').value = "";
-        document.getElementById('note').value = "";
-        updateUI();
-        saveData();
-      } else {
-        alert("الرصيد غير كافٍ أو المبلغ غير صحيح.");
-      }
-    }
-
-    function showConfirmBox() {
-      document.getElementById("confirmBox").style.display = "flex";
-    }
-
-    function hideConfirmBox() {
-      document.getElementById("confirmBox").style.display = "none";
-    }
-
-    function clearAll() {
-      localStorage.removeItem("accountData");
-      location.reload();
-    }
-
-    loadData();
-    updateUI();
-  </script>
-
+window.onload=()=>{renderProducts(); updateCartCount();};
+</script>
 </body>
 </html>

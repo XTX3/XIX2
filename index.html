@@ -17,14 +17,27 @@
     .popup {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;}
     .popup-content {background:#fff; padding:20px; border-radius:15px; width:90%; max-width:400px; text-align:center; position:relative;}
     .close {position:absolute; top:10px; left:10px; cursor:pointer; font-size:20px;}
-    .qr-img {width:200px; margin:10px auto;}
-    input {width:90%; padding:8px; margin:6px 0; border:1px solid #ccc; border-radius:8px;}
-    .row {display:flex; justify-content:space-between; gap:5px;}
-    .row input {width:48%;}
+    .qr-img {width:200px; margin:10px auto; display:block;}
+    /* ✅ الحقول في الوسط */
+    .popup-content input {
+      display:block;
+      width:80%;
+      max-width: 280px;
+      font-size: 14px;
+      padding: 8px;
+      margin: 8px auto;
+      border:1px solid #ccc;
+      border-radius:8px;
+      text-align:center;
+    }
+    .row {display:flex; justify-content:center; gap:5px; flex-wrap:wrap;}
+    .row input {width:45%;}
+    .popup-content h3 {font-size:16px;}
+    .popup-content button {font-size:14px; padding:8px 12px;}
     /* سلة عائمة (يسار أعلى) */
     .cart-btn {
       position:fixed;
-      top:70px; /* أسفل الهيدر */
+      top:70px;
       left:20px;
       background:#222;
       color:#fff;
@@ -36,47 +49,14 @@
     }
     .checkmark {display:none; font-size:48px; color:green; animation:pop 0.5s ease;}
     @keyframes pop {0%{transform:scale(0);}100%{transform:scale(1);}}
-    /* تحسين نافذة السلة */
-    #ordersListPopup {
-      display:none; 
-      position:fixed; 
-      top:0; left:0; 
-      width:100%; height:100%; 
-      background:rgba(0,0,0,0.6); 
-      align-items:center; 
-      justify-content:center; 
-      z-index:2000;
-    }
-    #ordersListPopup .popup-content {
-      background:#fff;
-      padding:20px;
-      border-radius:15px;
-      width:90%;
-      max-width:600px;
-      text-align:right;
-      max-height:80vh;
-      overflow-y:auto;
-      position:relative;
-    }
-    #ordersListPopup .close {
-      position:absolute;
-      top:10px;
-      left:10px;
-      cursor:pointer;
-      font-size:22px;
-      color:#333;
-    }
-    .order-card {
-      background:#fdfdfd;
-      border-radius:12px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.1);
-      padding:12px;
-      margin-bottom:10px;
-    }
+    /* نافذة السلة */
+    #ordersListPopup {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:2000;}
+    #ordersListPopup .popup-content {background:#fff; padding:20px; border-radius:15px; width:90%; max-width:600px; text-align:right; max-height:80vh; overflow-y:auto; position:relative;}
+    #ordersListPopup .close {position:absolute; top:10px; left:10px; cursor:pointer; font-size:22px; color:#333;}
+    .order-card {background:#fdfdfd; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:12px; margin-bottom:10px;}
     .order-card strong {color:#007bff;}
     .order-card p {margin:4px 0; font-size:14px;}
-
-    /* ----------- ✅ تحسين الاستجابة للشاشات الصغيرة ----------- */
+    /* موبايل */
     @media (max-width:600px) {
       header {font-size:18px; padding:12px;}
       .products {grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); padding:10px;}
@@ -118,20 +98,23 @@
 <div class="cart-btn" onclick="showOrdersPopup()">🛍️ <span id="cartCount">0</span></div>
 
 <script>
-/* نفس كودك بالضبط 👇 */
+/* ✅ منتجات كثيرة بأسعار عشوائية */
 const productsData = [
   {id:1, title:"جواكر", price:1.2, img:"https://via.placeholder.com/200"},
   {id:2, title:"شدات ببجي", price:2.5, img:"https://via.placeholder.com/200"},
   {id:3, title:"جواهر فري فاير", price:3.1, img:"https://via.placeholder.com/200"},
-  {id:4, title:"Lama", price:5.0, img:"https://via.placeholder.com/200"},
-  {id:5, title:"soulChill", price:4.7, img:"https://via.placeholder.com/200"},
-  {id:6, title:"TalkTalk", price:7.3, img:"https://l.top4top.io/p_35174cqc91.png"},
-  {id:7, title:"Group Voice", price:6.2, img:"https://via.placeholder.com/200"},
-  {id:8, title:"اهلا شات", price:8.9, img:"https://via.placeholder.com/200"},
-  {id:9, title:"YOOY", price:9.5, img:"https://via.placeholder.com/200"},
-  {id:10, title:"Hiya", price:11.0, img:"https://via.placeholder.com/200"},
-  {id:11, title:"YoHo", price:3.8, img:"https://via.placeholder.com/200"},
-  {id:12, title:"Cocco", price:6.7, img:"https://via.placeholder.com/200"}
+  {id:4, title:"فورت نايت V-Bucks", price:4.5, img:"https://via.placeholder.com/200"},
+  {id:5, title:"كريدت ماينكرافت", price:2.0, img:"https://via.placeholder.com/200"},
+  {id:6, title:"شحن روبلوكس", price:3.9, img:"https://via.placeholder.com/200"},
+  {id:7, title:"كول أوف ديوتي CP", price:4.2, img:"https://via.placeholder.com/200"},
+  {id:8, title:"كاش أب ستور", price:5.5, img:"https://via.placeholder.com/200"},
+  {id:9, title:"كاش جوجل بلاي", price:6.0, img:"https://via.placeholder.com/200"},
+  {id:10, title:"بطاقة نتفلكس", price:7.2, img:"https://via.placeholder.com/200"},
+  {id:11, title:"بطاقة سبوتيفاي", price:3.4, img:"https://via.placeholder.com/200"},
+  {id:12, title:"بطاقة بلايستيشن", price:8.9, img:"https://via.placeholder.com/200"},
+  {id:13, title:"بطاقة اكس بوكس", price:9.3, img:"https://via.placeholder.com/200"},
+  {id:14, title:"جيم باس PC", price:4.7, img:"https://via.placeholder.com/200"},
+  {id:15, title:"بطاقة ستيم", price:5.6, img:"https://via.placeholder.com/200"}
 ];
 let currentProduct=null, currentStep=1, customerName="", customerID="", customerWhatsApp="", coinAmount=0, coinPrice=0;
 let sentOrders = JSON.parse(localStorage.getItem('sentOrders')||'[]');
@@ -196,7 +179,6 @@ function calcPrice(){
 function nextStep(){
   if(currentStep===1){
     if(!coinAmount || coinAmount<=0){alert("أدخل عدد الكوينز"); return;}
-    if(!coinPrice || coinPrice<=0){alert("أدخل عدد صحيح لحساب السعر"); return;}
     currentStep++;
   } else if(currentStep===2){
     const name=document.getElementById('customerName').value.trim();
@@ -219,15 +201,12 @@ function paymentDone(){
 }
 function sendOrder(){
   const formattedText=`🛍️ *طلب جديد* 🛍️
-━━━━━━━━━━━━━━
-📦 *المنتج:* ${currentProduct.title}
-💰 *عدد الكوينز:* ${coinAmount}
-💵 *السعر:* ${coinPrice} USD
-👤 *الاسم/الحساب:* ${customerName}
-🆔 *ID:* ${customerID}
-📱 *واتساب العميل:* ${customerWhatsApp}
-━━━━━━━━━━━━━━
-شكراً لطلبك ❤️`;
+📦 المنتج: ${currentProduct.title}
+💰 الكوينز: ${coinAmount}
+💵 السعر: ${coinPrice} USD
+👤 الاسم: ${customerName}
+🆔 ID: ${customerID}
+📱 واتساب العميل: ${customerWhatsApp}`;
 
   if(/Android|iPhone|iPad/i.test(navigator.userAgent)){
     window.location.href=`https://wa.me/${ownerWhatsApp.replace('+','')}?text=${encodeURIComponent(formattedText)}`;
@@ -240,7 +219,6 @@ function sendOrder(){
   updateCartCount();
   closeOrderPopup();
 }
-
 function updateCartCount(){document.getElementById('cartCount').textContent=sentOrders.length;}
 function showOrdersPopup(){
   const ordersPopup=document.getElementById('ordersListPopup');
